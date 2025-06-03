@@ -64,8 +64,7 @@ class V4L2_Backend : public Capture_Backend
 				}
 
 				_buffer_plane_type_ = get_buffer_type_v4l2();
-				_pixel_format_ =
-						v4l2_fourcc(pixel_formats_fourcc.at(_configuration_.pixel_format)[0],
+				_pixel_format_ = v4l2_fourcc(pixel_formats_fourcc.at(_configuration_.pixel_format)[0],
 												pixel_formats_fourcc.at(_configuration_.pixel_format)[1],
 												pixel_formats_fourcc.at(_configuration_.pixel_format)[2],
 												pixel_formats_fourcc.at(_configuration_.pixel_format)[3]);
@@ -523,8 +522,6 @@ class V4L2_Backend : public Capture_Backend
 
 						_num_buffers_ = req.count;
 
-						const auto image_size = _v4l2_capture_format_.fmt.pix.sizeimage;
-
 						_allocated_buffers_.resize(_num_buffers_);
 						for(auto buffer_index = 0; buffer_index < _num_buffers_; ++buffer_index)
 						{
@@ -532,6 +529,7 @@ class V4L2_Backend : public Capture_Backend
 
 								if(V4L2_BUF_TYPE_VIDEO_CAPTURE == this->_buffer_plane_type_)
 								{
+										const auto image_size = _v4l2_capture_format_.fmt.pix.sizeimage;
 										_allocated_buffers_[buffer_index][0].resize(image_size);
 								}
 								else
@@ -550,8 +548,7 @@ class V4L2_Backend : public Capture_Backend
 		[[nodiscard]] v4l2_memory get_memory_mapping_type_v4l2() const
 		{
 				const auto& _configuration_ = this->_configuration_;
-				return _configuration_.buffering
-											 == Stream_Configuration::Buffering::Internal
+				return _configuration_.buffering == Stream_Configuration::Buffering::Internal
 									 ? //
 									 V4L2_MEMORY_MMAP
 									 // V4L2_MEMORY_DMABUF
@@ -560,7 +557,7 @@ class V4L2_Backend : public Capture_Backend
 
 		[[nodiscard]] v4l2_buf_type get_buffer_type_v4l2() const
 		{
-				auto& _configuration_ = this->_configuration_;
+				const auto& _configuration_ = this->_configuration_;
 				return (_configuration_.v4l2.contiguous) ? V4L2_BUF_TYPE_VIDEO_CAPTURE
 																								 : V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
 		}
@@ -675,8 +672,7 @@ class V4L2_Backend : public Capture_Backend
 
 				Multiplanar_Buffer_View planes_to_return;
 
-				auto take_span = [this, &planes_count](
-														 const v4l2_buffer& buf,
+				auto take_span = [this, &planes_count](const v4l2_buffer& buf,
 														 Multiplanar_Buffer_View& collected_planes)
 				{
 						if(get_buffer_type_v4l2() == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)
@@ -785,15 +781,12 @@ class V4L2_Backend : public Capture_Backend
 						_buffer_of_buffers.push_back(buf);
 				}
 				else if(_configuration_.v4l2.buffer_usage_policy
-								== Stream_Configuration::V4L2::Internal_Buffering_Strategy::
-										Only_Newest)
+								== Stream_Configuration::V4L2::Internal_Buffering_Strategy::Only_Newest)
 				{
 						static const unsigned int dummy_buffer_index =
 								std::numeric_limits<unsigned int>::max() - 1;
 
-						std::map<long,
-										 std::pair<Multiplanar_Buffer_View, v4l2_buffer>>
-								ordered_buffers;
+						std::map<long, std::pair<Multiplanar_Buffer_View, v4l2_buffer>> ordered_buffers;
 						for(auto buffer_order = 0; buffer_order < this->_num_buffers_; ++buffer_order)
 						{
 								auto buf	= instantiate_buf();
