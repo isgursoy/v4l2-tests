@@ -1394,12 +1394,12 @@ class V4L2_Backend : public Capture_Backend
 		{
 				struct v4l2_streamparm stream;
 				zero_that(stream);
-				stream.type																	 = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+				stream.type																	 = get_buffer_type_v4l2();
 				stream.parm.capture.timeperframe.numerator	 = 1;
 				stream.parm.capture.timeperframe.denominator = fps;
 				if(-1 == xioctl(_device_file_descriptor_, VIDIOC_S_PARM, &stream))
 				{
-						std::cerr << "error setting V4L2_BUF_TYPE_VIDEO_CAPTURE" << std::endl;
+						std::cerr << "error setting set_fps" << std::endl;
 						return 0;
 				}
 
@@ -1424,7 +1424,7 @@ class V4L2_Backend : public Capture_Backend
 				struct v4l2_streamparm stream_capabilities_query_payload;
 				zero_that(stream_capabilities_query_payload);
 
-				stream_capabilities_query_payload.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+				stream_capabilities_query_payload.type = get_buffer_type_v4l2();
 
 				if(ioctl(_device_file_descriptor_, VIDIOC_G_PARM, &stream_capabilities_query_payload)
 					 == 0)
