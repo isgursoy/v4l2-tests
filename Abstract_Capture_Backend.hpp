@@ -199,11 +199,6 @@ class Capture_Backend
 	public:
 		virtual Multiplanar_Buffer_View get_frame_data() = 0;
 
-#ifdef OCL_AVAILABLE
-		virtual typename Frame_Impl::Multiplanar_CL_Buffer share_frame_data(bool rw = false) = 0;
-		[[nodiscard]] virtual std::vector<std::vector<size_t>> put_frame_data(
-				std::vector<typename Frame_Impl::Multiplanar_CL_Buffer>& userspace) = 0;
-#endif
 		[[nodiscard]] virtual std::vector<std::vector<size_t>> put_frame_data(
 				std::vector<Multiplanar_Buffer_View>& userspace) = 0;
 
@@ -212,6 +207,7 @@ class Capture_Backend
 		{
 				return _configuration_;
 		}
+
 		[[nodiscard]] virtual Pixel_Format get_pixel_format() const = 0;
 
 		virtual bool set_zoom(int val) = 0;
