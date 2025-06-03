@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+.clang-format
+
+.clang-tidy
+
+*.user
+
+build/
