@@ -334,7 +334,7 @@ get_test_setup(int camera_index=0,bool mmap=true)
 		params.width				= 1920;
 		params.height				= 1080;
 		params.fps					= 30;
-		params.num_buffers	= 4;
+		params.num_buffers	= 1;
 		params.buffering		= mmap ? Cartrack::Stream_Configuration::Buffering::Internal : Cartrack::Stream_Configuration::Buffering::USERPTR;
 		params.pixel_format = Cartrack::Pixel_Format::NV12;
 #ifdef ON_DEVICE
@@ -361,6 +361,9 @@ get_test_setup(int camera_index=0,bool mmap=true)
 											: "External")
 							<< std::endl;
 		std::cout << "Pixel Format: " << static_cast<int>(params.pixel_format) << std::endl;
+		std::cout << "Contiguous Memory: " << (params.v4l2.contiguous ? "True" : "False") << std::endl;
+		std::cout << "_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _"
+							<< std::endl;
 
 		return params;
 }
@@ -378,7 +381,7 @@ main(
 
 		auto run_test = [](int cam, bool mmap)
 		{
-				const Cartrack::Stream_Configuration params = get_test_setup(cam);
+				const Cartrack::Stream_Configuration params = get_test_setup(cam,mmap);
 				auto backend = std::make_shared<Cartrack::V4L2_Backend>(params);
 
 				std::cout << "FPS: " << backend->get_fps() << std::endl;
