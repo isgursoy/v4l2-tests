@@ -896,12 +896,13 @@ class V4L2_Backend : public Capture_Backend
 						buf.type	 = get_buffer_type_v4l2();
 						buf.memory = get_memory_mapping_type_v4l2();
 						buf.index	 = userspace_frame_index;
-						// buf.reserved2 = 0;
-						// buf.reserved	= 0;
+						buf.flags			= 0;
+						buf.reserved2 = 0;
+						buf.reserved	= 0;
 
+						v4l2_plane planes[planes_count];
 						if(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE == this->_buffer_plane_type_)
 						{
-								v4l2_plane planes[planes_count];
 								memset(planes, 0, planes_count * sizeof(v4l2_plane));
 								buf.length = planes_count;
 
@@ -910,6 +911,8 @@ class V4L2_Backend : public Capture_Backend
 										planes[plane_index].m.userptr = ulong(userspace_frame[plane_index].data());
 										planes[plane_index].length =
 												_v4l2_capture_format_.fmt.pix_mp.plane_fmt[plane_index].sizeimage;
+										planes[plane_index].data_offset	 = 0;
+										planes[plane_index].m.mem_offset = 0;
 								}
 
 								buf.m.planes = planes;
@@ -958,6 +961,14 @@ class V4L2_Backend : public Capture_Backend
 						zero_that(buf);
 						buf.type	 = get_buffer_type_v4l2();
 						buf.memory = get_memory_mapping_type_v4l2();
+
+						v4l2_plane planes[planes_count];
+						if(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE == this->_buffer_plane_type_)
+						{
+								memset(planes, 0, planes_count * sizeof(v4l2_plane));
+								buf.length	 = planes_count;
+								buf.m.planes = planes;
+						}
 
 						if(-1 == xioctl(_device_file_descriptor_, VIDIOC_DQBUF, &buf))
 						{
