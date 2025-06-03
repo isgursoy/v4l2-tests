@@ -501,9 +501,19 @@ class V4L2_Backend : public Capture_Backend
 								buf.memory = get_memory_mapping_type_v4l2();
 								buf.index	 = i;
 
+								v4l2_plane planes[planes_count];
+								if(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE == this->_buffer_plane_type_)
+								{
+										memset(planes, 0, planes_count * sizeof(v4l2_plane));
+										buf.m.planes = planes;
+										buf.length	 = planes_count;
+								}
+
 								if(-1 == xioctl(this->_device_file_descriptor_, VIDIOC_QBUF, &buf))
 								{
-										throw std::runtime_error("VIDIOC_QBUF");
+										const int err = errno;
+										throw std::runtime_error("VIDIOC_QBUF setup_buffering: "
+																						 + std::string(strerror(err)));
 								}
 						}
 				}
@@ -692,7 +702,8 @@ class V4L2_Backend : public Capture_Backend
 						if(-1 == xioctl(_device_file_descriptor_, VIDIOC_QBUF, &buf))
 						{
 								const int err = errno; // Get the error number
-								std::cerr << "VIDIOC_QBUF error " << err << ": " << strerror(err) << std::endl;
+								std::cerr << "VIDIOC_QBUF failed in frame grabbing" << err << ": "
+													<< strerror(err) << std::endl;
 								return false;
 						}
 						return true;
@@ -712,7 +723,9 @@ class V4L2_Backend : public Capture_Backend
 												/* fall through */
 												break;
 										default:
-												std::cerr << "VIDIOC_DQBUF" << std::endl;
+												const int err = errno; // Get the error number
+												std::cerr << "VIDIOC_DQBUF failed in frame grabbing" << err << ": "
+																	<< strerror(err) << std::endl;
 												return false;
 								}
 						}
@@ -732,6 +745,15 @@ class V4L2_Backend : public Capture_Backend
 
 						buf.type	 = get_buffer_type_v4l2();
 						buf.memory = get_memory_mapping_type_v4l2();
+
+						v4l2_plane planes[this->num_planes()];
+						if(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE == this->_buffer_plane_type_)
+						{
+								memset(planes, 0, this->num_planes() * sizeof(v4l2_plane));
+								buf.m.planes = planes;
+								buf.length	 = this->num_planes();
+						}
+
 						return buf;
 				};
 
